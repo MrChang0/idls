@@ -1,8 +1,9 @@
 package device
 
 import (
-	"github.com/yuin/gopher-lua"
 	"log"
+
+	"github.com/yuin/gopher-lua"
 )
 
 func Loader(L *lua.LState) int {
@@ -18,11 +19,11 @@ var exports = map[string]lua.LGFunction{
 }
 
 func call(L *lua.LState) int {
+	result := lua.LFalse
+	defer L.Push(result)
 	name := L.CheckString(1)
 	top := L.GetTop()
 	d, ok := CheckDeviceByName(name)
-	result := lua.LFalse
-	defer L.Push(result)
 	if !ok {
 		log.Println("can't find device name:", name)
 		return 1
@@ -31,6 +32,7 @@ func call(L *lua.LState) int {
 	argTypes, ok := d.FindEventArgs(funcname)
 	if !ok {
 		log.Println("can't find event from device name:", name)
+		return 1
 	}
 	index := 3
 	args := make([]Arg, 0, len(argTypes))

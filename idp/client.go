@@ -1,9 +1,9 @@
 package idp
 
 import (
-	"encoding/json"
-	"log"
-	"net"
+"encoding/json"
+"log"
+"net"
 )
 
 type Client struct {

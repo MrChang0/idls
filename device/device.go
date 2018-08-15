@@ -3,9 +3,9 @@ package device
 import (
 	"net"
 
+	"encoding/json"
 	"errors"
 	"github.com/yuin/gopher-lua"
-	"encoding/json"
 )
 
 type ArgType struct {
@@ -51,7 +51,7 @@ type Device struct {
 	conn      net.Conn `json:"-" bson:"-"`
 	eventChan chan Event
 
-	l *lua.LState
+	l   *lua.LState
 	err string
 }
 
@@ -65,6 +65,9 @@ func (d *Device) FindEventArgs(funcname string) ([]ArgType, bool) {
 }
 
 func (d *Device) SetConn(conn net.Conn) {
+	if d.conn != nil{
+		d.conn.Close()
+	}
 	d.conn = conn
 }
 
@@ -77,10 +80,10 @@ func (d *Device) findSignalType(name string) (SignalType, error) {
 	return SignalType{}, errors.New("can't find Signal:" + name + "from device:" + d.Name)
 }
 
-func(d *Device) EventType() (string,error){
-	b,err := json.Marshal(d.Events)
-	if err != nil{
-		return "",err
+func (d *Device) EventType() (string, error) {
+	b, err := json.Marshal(d.Events)
+	if err != nil {
+		return "", err
 	}
-	return string(b),nil
+	return string(b), nil
 }

@@ -2,13 +2,13 @@ package device
 
 import (
 	"github.com/yuin/gopher-lua"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"text/template"
-	"io/ioutil"
 )
 
 func pathExists(filename string) bool {
@@ -53,26 +53,30 @@ func (d *Device) vminit() error {
 	return d.l.DoFile(filename)
 }
 
-func (d *Device) GetCode()(string,error){
+func (d *Device) GetCode() (string, error) {
 	filename := "lua/" + d.UUID + ".lua"
-	b,err := ioutil.ReadFile(filename)
-	if err!= nil{
-		return "",err
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
 	}
-	return string(b),nil
+	return string(b), nil
 }
 
-func (d *Device) Error()string{
+func (d *Device) Error() string {
 	return d.err
 }
 
-func (d *Device) NewCode(code string) error{
-	 err := d.l.DoString(code)
-	 if err!=nil{
-	 	return err
-	 }
+func (d *Device) NewCode(code string) error {
+	err := d.l.DoString(code)
+	if err != nil {
+		return err
+	}
 	filename := "lua/" + d.UUID + ".lua"
-	return ioutil.WriteFile(filename,[]byte(code),0644)
+	err = ioutil.WriteFile(filename, []byte(code), 0644)
+	if err != nil{
+		return err
+	}
+	return d.vminit()
 }
 
 func paramsFromType(signalType SignalType, s *Signal) []lua.LValue {

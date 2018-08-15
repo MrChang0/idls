@@ -14,9 +14,10 @@ func GetDevice(conn net.Conn) (d *device.Device, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("uuid: "+uuid+" online")
+	log.Println("uuid: " + uuid + " online")
 	d, ok := device.CheckDeviceByUuid(uuid)
 	if ok {
+		d.SetConn(conn)
 		return d, nil
 	}
 	d, ok = db.GetDevice(uuid)
@@ -38,17 +39,8 @@ func GetDevice(conn net.Conn) (d *device.Device, err error) {
 	return d, nil
 }
 
-func EventLoop(conn net.Conn) {
-	d, err := GetDevice(conn)
-	if err != nil {
-		log.Printf("device not found:%s", err.Error())
-		conn.Close()
-	}
-	d.Start()
-}
-
 func main() {
-	listen, err := net.Listen("tcp", ":5566")
+	listen, err := net.Listen("tcp", "0.0.0.0:5566")
 	if err != nil {
 		log.Fatalf("listen error")
 	}
@@ -58,7 +50,15 @@ func main() {
 			if err != nil {
 				log.Println(err.Error())
 			}
-			go EventLoop(conn)
+			go func(conn net.Conn) {
+				d, err := GetDevice(conn)
+				if err != nil {
+					log.Printf("device not found:%s", err.Error())
+					conn.Close()
+					return
+				}
+				d.Start()
+			}(conn)
 		}
 	}(listen)
 	web.Run()

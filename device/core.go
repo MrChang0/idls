@@ -9,7 +9,7 @@ import (
 func signal(d *Device, data []byte) {
 	s := &Signal{}
 	json.Unmarshal(data, s)
-	log.Println("uuid:"+d.UUID+" run signal:",s.Name)
+	log.Println("uuid:"+d.UUID+" run signal:", s.Name)
 	if err := d.RunSignalFunc(s); err != nil {
 		d.err = err.Error()
 	}
@@ -34,6 +34,7 @@ func (d *Device) Start() {
 	go func(d *Device) {
 		for {
 			event, ok := <-d.eventChan
+			log.Printf("%s:event name:%s",d.Name,event.Name)
 			if !ok {
 				log.Println("channel close")
 				break
@@ -42,14 +43,12 @@ func (d *Device) Start() {
 		}
 	}(d)
 	go func(d *Device) {
-		defer d.conn.Close()
-		defer close(d.eventChan)
 		for {
 			c, data, err := idp.GetCommand(d.conn)
-			log.Println(data)
+			log.Println("uuid:"+d.UUID+" read command "+c)
 			if err != nil {
 				log.Println(d.Name + " read err " + err.Error())
-				offline(d,nil)
+				offline(d, nil)
 				break
 			}
 			go cmds[c](d, data)

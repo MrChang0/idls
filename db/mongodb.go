@@ -42,10 +42,10 @@ func RegDevice(device *device.Device) bool {
 	return true
 }
 
-func UpdataDevice(d *device.Device) bool{
-	err := cdevice.UpdateId(d.UUID,d)
-	if err!=nil {
-		log.Println("MonogoDB error:"+err.Error())
+func UpdateDevice(d *device.Device) bool {
+	err := cdevice.UpdateId(d.UUID, d)
+	if err != nil {
+		log.Println("MonogoDB error:" + err.Error())
 		return false
 	}
 	return true
